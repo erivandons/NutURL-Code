@@ -1,0 +1,7 @@
+{
+  "name": "nuturl - Premium URL Shortener",
+  "description": "A high-performance, minimalist URL shortener with ad-based monetization and premium SaaS tiers.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

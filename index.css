@@ -1,0 +1,5 @@
+
+/* 
+  Este arquivo existe para prevenir erros de 404 no build de produção.
+  O estilo principal é carregado via Tailwind CDN no index.html.
+*/
