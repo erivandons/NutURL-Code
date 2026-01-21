@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+// Enumeração para garantir a integridade dos tipos de conta
+enum AccountType {
+  GUEST
+  FREE
+  PREMIUM
+}
+
+model User {
+  id                  String      @id @default(uuid()) @db.NVarChar(36)
+  email               String      @unique @db.NVarChar(191)
+  name                String?     @db.NVarChar(191)
+  passwordHash        String?     @db.NVarChar(191)
+  salt                String?     @db.NVarChar(191)
+  googleId            String?     @unique @db.NVarChar(191)
+  
+  // Mapeia o Enum definido acima. Se preferir string pura, altere para String @default("FREE")
+  accountType         AccountType @default(FREE)
+  
+  createdAt           DateTime    @default(now()) // O Prisma mapeia DateTime para datetime2 por padrão no SQL Server
+  subscriptionEndDate DateTime?
+
+  // Relacionamento inverso
+  shortLinks          ShortLink[]
+}
+
+model ShortLink {
+  id          String    @id @default(uuid()) @db.NVarChar(36)
+  
+  // O tipo @db.VarChar(Max) é crucial para suportar URLs longas no SQL Server sem truncar
+  originalUrl String    @db.VarChar(Max) 
+  
+  slug        String    @unique @db.NVarChar(191)
+  clicks      Int       @default(0)
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime?
+  
+  userId      String?   @db.NVarChar(36)
+
+  // CRÍTICO: onDelete/onUpdate configurados como NoAction para evitar erros de ciclos no SQL Server
+  user        User?     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  // Índice explícito para otimização de queries, conforme solicitado (IX_ShortLink_userId)
+  @@index([userId], map: "IX_ShortLink_userId")
+}
